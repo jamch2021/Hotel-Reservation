@@ -28,3 +28,17 @@ Documentation
 ```https://mongodb.com/docs/drivers/go/current/quick-start
 
 ```
+
+Installing mongodb client
+
+```
+go get go.mongodb.org/mongo-driver/mongo
+```
+
+## Docker
+
+### Installing mongodb as a Docker container
+
+```
+docker run --name mongo -d -p 27017:27017 mongo ==> Worked.
+```
