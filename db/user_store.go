@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/fulltimegodev/hotel-reservation/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,8 +12,13 @@ import (
 
 const userColl = "users"
 
+type Dropper interface {
+	Drop(context.Context)error
+}
+
 //Interface
 type UserStore interface {
+	Dropper
 	GetUserByID(context.Context, string)(*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
@@ -61,6 +67,11 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error){
 	
 }
 
+func (s *MongoUserStore) Drop (ctx context.Context) error {
+	fmt.Println("----- dropping user collection")
+	return s.coll.Drop(ctx)
+}
+
 func (s *MongoUserStore) UpdateUser (ctx context.Context, filter bson.M, params types.UpdateUserParams) (error){
 
 	update := bson.D{
@@ -97,9 +108,6 @@ func (s *MongoUserStore) DeleteUser (ctx context.Context, id string) (error){
 }
 
 
-
-
-
 func (s *MongoUserStore) InsertUser (ctx context.Context, user *types.User) (*types.User, error){
 	res, err := s.coll.InsertOne(ctx, user)
 
@@ -110,7 +118,7 @@ func (s *MongoUserStore) InsertUser (ctx context.Context, user *types.User) (*ty
 	return user, nil
 }
 
-func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
+func NewMongoUserStore(client *mongo.Client, dbname string) *MongoUserStore {
 	return &MongoUserStore{
 		client: client,
 		coll: client.Database(DBNAME).Collection(userColl) ,
